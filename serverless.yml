@@ -1,0 +1,52 @@
+service: pdf-download
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-east-1
+  iamRoleStatements:
+    - ${file(iam/pdf-files-bucket-iam.yml):PdfFilesBucketIAM}
+  apiGateway:
+    binaryMediaTypes:
+      - 'application/pdf'
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  get-pdf:
+    handler: src/handlers/get-pdf.getPdf
+    environment:
+      PDF_BUCKET_NAME: ${self:custom.PdfBucket.name}
+    events:
+      - httpApi:
+          path: /pdf/{name}
+          method: GET
+
+resources:
+  Resources:
+    PdfBucket: ${file(resources/pdf-files-bucket.yml):PdfFilesBucket}
+    PdfBucketPolicy: ${file(resources/pdf-files-bucket.yml):PdfBucketPolicy}
+
+custom:
+  PdfBucket:
+    name: magnus-pdf-bucket

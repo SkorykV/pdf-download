@@ -1,0 +1,22 @@
+PdfFilesBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:custom.PdfBucket.name}
+    LifecycleConfiguration:
+      Rules:
+        - Id: ExpireFiles
+          Status: Enabled
+          ExpirationInDays: 1
+
+PdfBucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref PdfBucket
+    PolicyDocument:
+      Statement:
+        - Sid: PublicRead
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - s3:GetObject
+          Resource: arn:aws:s3:::${self:custom.PdfBucket.name}/*
